@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Spacer(flex: 2,),
+            const Spacer(flex: 2),
             Text(
               'FOODSENSE',
               style: TextStyle(

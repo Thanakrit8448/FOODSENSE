@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/pages/signup_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key}); // ✅ เพิ่ม Constructor
@@ -76,7 +77,12 @@ class LoginPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignupPage()),
+                        );
+                      },
                       child: Text(
                         'SIGN UP',
                         style: TextStyle(
