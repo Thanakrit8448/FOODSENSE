@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:foodsense_app/pages/signin_page.dart';
+import 'package:foodsense_app/pages/signup_page.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class SigninPage extends StatefulWidget {
+  const SigninPage({super.key});
 
   @override
-  _SignupPageState createState() => _SignupPageState();
+  _SigninPageState createState() => _SigninPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SigninPageState extends State<SigninPage> {
   bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
+  //bool isConfirmPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class _SignupPageState extends State<SignupPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create Your\nAccount',
+                  'Hello Sign IN!',
                   style: TextStyle(
                     fontFamily: 'Caveat',
                     fontSize: 45,
@@ -38,9 +38,9 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 SizedBox(height: 40),
                 _buildTextField(label: 'Username'),
-                _buildTextField(label: 'Email'),
-                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true, isConfirmPassword: true),
-                _buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
+                //_buildTextField(label: 'Email'),
+                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true),
+                //_buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
                 SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -54,7 +54,7 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                     onPressed: () {},
                     child: Text(
-                      'SIGN UP',
+                      'SIGN IN',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -68,11 +68,11 @@ class _SignupPageState extends State<SignupPage> {
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const SigninPage()),
+                      MaterialPageRoute(builder: (context) => SignupPage()),
                       );
                     },
                     child: Text(
-                      'Do you have account? SIGN IN',
+                      'Do you have account? SIGN UP',
                       style: TextStyle(
                         fontSize: 16,
                         color: Color(0xFF717171),
@@ -88,7 +88,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildTextField({required String label, bool obscureText = false, bool isPassword = false, bool isConfirmPassword = false}) {
+  Widget _buildTextField({required String label, bool obscureText = false, bool isPassword = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20),
       child: TextField(
@@ -106,18 +106,14 @@ class _SignupPageState extends State<SignupPage> {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    (isConfirmPassword ? isConfirmPasswordVisible : isPasswordVisible)
+                    isPasswordVisible
                         ? Icons.visibility
                         : Icons.visibility_off,
                     color: Color(0xFF717171),
                   ),
                   onPressed: () {
                     setState(() {
-                      if (isConfirmPassword) {
-                        isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                      } else {
-                        isPasswordVisible = !isPasswordVisible;
-                      }
+                      isPasswordVisible = !isPasswordVisible;
                     });
                   },
                 )
@@ -127,3 +123,4 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 }
+
