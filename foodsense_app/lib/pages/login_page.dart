@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/pages/signin_page.dart';
 import 'package:foodsense_app/pages/signup_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -55,7 +56,11 @@ class LoginPage extends StatelessWidget {
                           
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SigninPage())
+                        );
+                      },
                       child: Text(
                         'SIGN IN',
                         style: TextStyle(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/signup_page.dart';
 
 class SigninPage extends StatefulWidget {
@@ -11,6 +12,7 @@ class SigninPage extends StatefulWidget {
 class _SigninPageState extends State<SigninPage> {
   bool isPasswordVisible = false;
   //bool isConfirmPasswordVisible = false;
+  bool isLinkPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +54,11 @@ class _SigninPageState extends State<SigninPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      );
+                    },
                     child: Text(
                       'SIGN IN',
                       style: TextStyle(
@@ -66,6 +72,15 @@ class _SigninPageState extends State<SigninPage> {
                 SizedBox(height: 20),
                 Center(
                   child: GestureDetector(
+                    onTapDown: (_) {
+                      setState(() => isLinkPressed = true);
+                    },
+                    onTapUp: (_) {
+                      setState(() => isLinkPressed = false);
+                    },
+                    onTapCancel: () {
+                      setState(() => isLinkPressed = false);
+                    },
                     onTap: () {
                       Navigator.push(context,
                       MaterialPageRoute(builder: (context) => SignupPage()),
@@ -75,7 +90,8 @@ class _SigninPageState extends State<SigninPage> {
                       'Do you have account? SIGN UP',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF717171),
+                        color: isLinkPressed ? Color(0xFFAD6FFF) : Color(0xFF717171),
+                        decoration: isLinkPressed ? TextDecoration.underline : TextDecoration.none,
                       ),
                     ),
                   ),

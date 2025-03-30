@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/signin_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -11,6 +12,7 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
+  bool isLinkPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,7 @@ class _SignupPageState extends State<SignupPage> {
                 SizedBox(height: 40),
                 _buildTextField(label: 'Username'),
                 _buildTextField(label: 'Email'),
-                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true, isConfirmPassword: true),
+                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true, isConfirmPassword: false),
                 _buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
                 SizedBox(height: 20),
                 SizedBox(
@@ -52,7 +54,11 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, 
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      );
+                    },
                     child: Text(
                       'SIGN UP',
                       style: TextStyle(
@@ -66,6 +72,15 @@ class _SignupPageState extends State<SignupPage> {
                 SizedBox(height: 20),
                 Center(
                   child: GestureDetector(
+                    onTapDown: (_) {
+                      setState(() => isLinkPressed = true);
+                    },
+                    onTapUp: (_) {
+                      setState(() => isLinkPressed = false);
+                    },
+                    onTapCancel: () {
+                      setState(() => isLinkPressed = false);
+                    },
                     onTap: () {
                       Navigator.push(context,
                       MaterialPageRoute(builder: (context) => const SigninPage()),
@@ -75,7 +90,8 @@ class _SignupPageState extends State<SignupPage> {
                       'Do you have account? SIGN IN',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF717171),
+                        color: isLinkPressed ? Color(0xFFAD6FFF) : Color(0xFF717171),
+                        decoration: isLinkPressed ? TextDecoration.underline : TextDecoration.none,
                       ),
                     ),
                   ),
