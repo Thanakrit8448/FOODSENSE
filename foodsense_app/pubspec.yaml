@@ -62,6 +62,9 @@ flutter:
     - family: Caveat
       fonts:
         - asset: fonts/Caveat-Regular.ttf
+          weight: 400
+        - asset: fonts/Caveat-SemiBold.ttf
+          weight: 600
 
     - family: Inter
       fonts:
