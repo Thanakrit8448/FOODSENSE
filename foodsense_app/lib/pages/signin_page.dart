@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/signup_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -13,6 +14,10 @@ class _SigninPageState extends State<SigninPage> {
   bool isPasswordVisible = false;
   //bool isConfirmPasswordVisible = false;
   bool isLinkPressed = false;
+
+  //Make a Controller
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +44,9 @@ class _SigninPageState extends State<SigninPage> {
                   ),
                 ),
                 SizedBox(height: 40),
-                _buildTextField(label: 'Username'),
+                _buildTextField(label: 'Username', controller: usernameController),
                 //_buildTextField(label: 'Email'),
-                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true),
+                _buildTextField(label: 'Password', controller: passwordController, obscureText: !isPasswordVisible, isPassword: true),
                 //_buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
                 SizedBox(height: 20),
                 SizedBox(
@@ -54,10 +59,53 @@ class _SigninPageState extends State<SigninPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                      );
+                    onPressed: () async {
+                      
+
+                      //Press to send Data to DB
+                      final username = usernameController.text.trim();
+                      final password = passwordController.text;
+
+                      try{
+                        final response = await Supabase.instance.client.auth.signInWithPassword(
+                            //email is username in this field
+                            email: username,
+                            password: password
+                          );
+
+
+                        final user = response.user;
+
+                        if(user != null){
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Sign in Successful'))
+                          );
+
+
+                          Navigator.pushReplacement(
+                          context,
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                          );
+                        }
+
+                        else{
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Sign in Unsuccessful'))
+                          );
+                        }
+                      }
+
+                      catch(error){
+                        String message = 'Sign in Unsuccessful';
+
+                        if(error is AuthException){
+                          message = error.message;
+                        }
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(message))
+                        );
+                      }
                     },
                     child: Text(
                       'SIGN IN',
@@ -104,10 +152,11 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
-  Widget _buildTextField({required String label, bool obscureText = false, bool isPassword = false}) {
+  Widget _buildTextField({required String label, required TextEditingController controller, bool obscureText = false, bool isPassword = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20),
       child: TextField(
+        controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
           labelText: label,
