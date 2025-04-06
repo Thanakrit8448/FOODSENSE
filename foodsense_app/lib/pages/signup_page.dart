@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/signin_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -13,6 +15,12 @@ class _SignupPageState extends State<SignupPage> {
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
   bool isLinkPressed = false;
+
+  //Make an Controller
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +47,10 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
                 SizedBox(height: 40),
-                _buildTextField(label: 'Username'),
-                _buildTextField(label: 'Email'),
-                _buildTextField(label: 'Password', obscureText: !isPasswordVisible, isPassword: true, isConfirmPassword: false),
-                _buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
+                _buildTextField(label: 'Username', controller: usernameController),
+                _buildTextField(label: 'Email', controller: emailController),
+                _buildTextField(label: 'Password', controller: passwordController, obscureText: !isPasswordVisible, isPassword: true, isConfirmPassword: false),
+                _buildTextField(label: 'Confirm Password', controller: confirmPasswordController, obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
                 SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -54,10 +62,66 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.push(context, 
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                      );
+                    onPressed: () async {
+                      //Press to send Data to DB
+                      final username = usernameController.text.trim();
+                      final email = emailController.text.trim();
+                      final password = passwordController.text;
+                      final confirmPassword = confirmPasswordController.text;
+                      
+
+                      if(password != confirmPassword){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Password do not match'))
+                        );
+                        return;
+                      }
+
+                      try{
+                        final response = await Supabase.instance.client.auth.signUp(
+                          email: email,
+                          password: password, 
+                        );
+
+                        final user = response.user;
+
+                        if(user != null){
+                          await Supabase.instance.client.from('profiles').insert({
+                            'id': user.id,
+                            'email': email,
+                            'username': username,
+
+                          });
+
+
+
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Completely Register')),
+                          );
+
+
+
+
+                          Navigator.pushReplacement(context, 
+                            MaterialPageRoute(builder: (context) => SigninPage()),
+                          );
+                        }
+
+                        else{
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Try Again')),
+                          );    
+                        }
+                      } 
+
+                      catch(error){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $error')),
+                        );
+                      }
+
+
                     },
                     child: Text(
                       'SIGN UP',
@@ -104,10 +168,11 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildTextField({required String label, bool obscureText = false, bool isPassword = false, bool isConfirmPassword = false}) {
+  Widget _buildTextField({required String label, required TextEditingController controller,bool obscureText = false, bool isPassword = false, bool isConfirmPassword = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20),
       child: TextField(
+        controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
           labelText: label,
