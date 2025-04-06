@@ -44,9 +44,9 @@ class _SigninPageState extends State<SigninPage> {
                   ),
                 ),
                 SizedBox(height: 40),
-                _buildTextField(label: 'Username', controller: usernameController),
+                _buildTextField(label: 'Username', controller: usernameController,),
                 //_buildTextField(label: 'Email'),
-                _buildTextField(label: 'Password', controller: passwordController, obscureText: !isPasswordVisible, isPassword: true),
+                _buildTextField(label: 'Password',controller: passwordController, obscureText: !isPasswordVisible, isPassword: true,),
                 //_buildTextField(label: 'Confirm Password', obscureText: !isConfirmPasswordVisible, isPassword: true, isConfirmPassword: true),
                 SizedBox(height: 20),
                 SizedBox(
@@ -60,51 +60,48 @@ class _SigninPageState extends State<SigninPage> {
                       ),
                     ),
                     onPressed: () async {
-                      
-
                       //Press to send Data to DB
-                      final username = usernameController.text.trim();
+                      final username = usernameController.text.trim().toLowerCase();
                       final password = passwordController.text;
 
-                      try{
-                        final response = await Supabase.instance.client.auth.signInWithPassword(
-                            //email is username in this field
-                            email: username,
-                            password: password
-                          );
+                      final emailResponse = await Supabase.instance.client.rpc(
+                        'get_email_by_username',
+                        params: {'input_username': username},
+                      );
 
-
-                        final user = response.user;
-
-                        if(user != null){
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Sign in Successful'))
-                          );
-
-
-                          Navigator.pushReplacement(
-                          context,
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                          );
-                        }
-
-                        else{
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Sign in Unsuccessful'))
-                          );
-                        }
+                      if (emailResponse == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Username not found')),
+                        );
+                        return;
                       }
 
-                      catch(error){
-                        String message = 'Sign in Unsuccessful';
+                      final email = emailResponse as String;
 
-                        if(error is AuthException){
-                          message = error.message;
+                      try {
+                        final response = await Supabase.instance.client.auth
+                            .signInWithPassword(
+                              email: email,
+                              password: password,
+                            );
+
+                        if (response.user != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Signin Successfully')),
+                          );
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Signin Unsuccessfully')),
+                          );
                         }
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(message))
-                        );
+                      } catch (error) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text('Error: $error')));
                       }
                     },
                     child: Text(
@@ -130,16 +127,23 @@ class _SigninPageState extends State<SigninPage> {
                       setState(() => isLinkPressed = false);
                     },
                     onTap: () {
-                      Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SignupPage()),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignupPage()),
                       );
                     },
                     child: Text(
                       'Do you have account? SIGN UP',
                       style: TextStyle(
                         fontSize: 16,
-                        color: isLinkPressed ? Color(0xFFAD6FFF) : Color(0xFF717171),
-                        decoration: isLinkPressed ? TextDecoration.underline : TextDecoration.none,
+                        color:
+                            isLinkPressed
+                                ? Color(0xFFAD6FFF)
+                                : Color(0xFF717171),
+                        decoration:
+                            isLinkPressed
+                                ? TextDecoration.underline
+                                : TextDecoration.none,
                       ),
                     ),
                   ),
@@ -152,7 +156,12 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
-  Widget _buildTextField({required String label, required TextEditingController controller, bool obscureText = false, bool isPassword = false}) {
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    bool obscureText = false,
+    bool isPassword = false,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20),
       child: TextField(
@@ -168,24 +177,24 @@ class _SigninPageState extends State<SigninPage> {
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0xFF717171)),
           ),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(
-                    isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                    color: Color(0xFF717171),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isPasswordVisible = !isPasswordVisible;
-                    });
-                  },
-                )
-              : null,
+          suffixIcon:
+              isPassword
+                  ? IconButton(
+                    icon: Icon(
+                      isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Color(0xFF717171),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isPasswordVisible = !isPasswordVisible;
+                      });
+                    },
+                  )
+                  : null,
         ),
       ),
     );
   }
 }
-
