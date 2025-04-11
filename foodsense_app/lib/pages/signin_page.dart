@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:foodsense_app/main.dart';
+//import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/signup_page.dart';
+import 'package:foodsense_app/pages/home_page.dart';
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
