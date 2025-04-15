@@ -74,7 +74,10 @@ flutter:
 
     - family: Sora
       fonts:
+        - asset: fonts/Sora-Regular.ttf
+          weight: 400
         - asset: fonts/Sora-SemiBold.ttf
+          weight: 600
 
 
   assets:
