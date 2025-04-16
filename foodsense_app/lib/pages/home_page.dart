@@ -345,7 +345,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 SizedBox(
-                  height: 235,
+                  height: 300,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: ListView.builder(
