@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
 import 'package:foodsense_app/pages/home_page.dart';
 
@@ -12,8 +10,7 @@ class DatabasePage extends StatefulWidget {
 }
 
 class _DatabasePageState extends State<DatabasePage> {
-  final ImagePicker _picker = ImagePicker();
-  File? _menuImage;
+  
   
   TextField buildRoundedTextField({
     int maxLines = 1,
@@ -119,51 +116,8 @@ class _DatabasePageState extends State<DatabasePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    
                     const SizedBox(height: 20),
-                    const Text(
-                      'Add Picture',
-                      style: TextStyle(
-                        color: Color(0xFF9747FF),
-                        fontFamily: 'Sora',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () async {
-                        final pickedFile = await _picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (pickedFile != null) {
-                          setState(() {
-                            _menuImage = File(pickedFile.path);
-                          });
-                        }
-                      },
-                      child: Container(
-                        height: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: _menuImage != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.file(
-                                  _menuImage!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
-                              )
-                            : const Center(
-                                child: Icon(Icons.image,
-                                    size: 48, color: Colors.white),
-                              ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
                     const Text(
                       'Add Menu Name',
                       style: TextStyle(
