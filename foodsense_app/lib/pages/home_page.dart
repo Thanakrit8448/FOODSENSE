@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/pages/detail_page.dart';
 import 'package:foodsense_app/pages/login_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
@@ -355,6 +356,13 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 15),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => const DetailPage()),
+                              );
+                            },
+                          
                           child: Container(
                             width: 250,
                             decoration: BoxDecoration(
@@ -421,6 +429,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
+                          )
                         );
                       },
                     ),

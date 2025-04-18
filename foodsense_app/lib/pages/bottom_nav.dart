@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+//import 'package:foodsense_app/main.dart';
 import 'package:foodsense_app/pages/home_page.dart';
 import 'package:foodsense_app/pages/map_page.dart';
 import 'package:foodsense_app/pages/Database_page.dart';

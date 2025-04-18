@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
-import 'package:flutter/material.dart';
+//import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+//import 'package:camera/camera.dart';
 
-
+//late List<CameraDescription> cameras;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  //cameras = await availableCameras();
+
   await Supabase.initialize(
     url: 'https://sospqlztlegdwhwvugfr.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3BxbHp0bGVnZHdod3Z1Z2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzMzk1OTQsImV4cCI6MjA1ODkxNTU5NH0.GQye91TKIJJfqQ6K7Ns3xQEF7BGlc2edTN6j3oY6YS0',
