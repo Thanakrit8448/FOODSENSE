@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:foodsense_app/pages/login_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,6 +16,30 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentAdIndex = 0;
   Timer? _adTimer;
+
+  //Create List retrieve Food Data from supabase
+  List<Map<String, dynamic>> foodList = [];
+
+  //Retrieve Food Data by select()
+  Future<void> fetchFoodItem() async {
+    final response = await Supabase.instance.client
+          .from('food_items')
+          .select()
+          .order('created_at', ascending: false)
+          .limit(6);
+
+    setState(() {
+      foodList = List<Map<String, dynamic>>.from(response);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startAdRotation();
+    fetchFoodItem();
+  }
+
 
   final List<String> adImages = [
     'assets/icons/ad1.png',
@@ -33,12 +58,6 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _emailController = TextEditingController(
     text: "thanakrit.oue@student.mahidol.edu",
   );
-
-  @override
-  void initState() {
-    super.initState();
-    _startAdRotation();
-  }
 
   void _startAdRotation() {
     _adTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -326,12 +345,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 SizedBox(
-                  height: 235,
+                  height: 300,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: 6,
+                      //itemCount: 6,
+                      itemCount: foodList.take(6).length,
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 15),
@@ -350,12 +370,19 @@ class _HomePageState extends State<HomePage> {
                                   borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(16),
                                   ),
-                                  child: Image.asset(
-                                    'assets/icons/Pad_Thai.jpg',
+                                  child: 
+                                  //Change Image assert to Image network
+                                  Image.network(
+                                    foodList[index]['image_url'],
                                     height: 180,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
-                                  ),
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                                    loadingBuilder: (context, child, progress) {
+                                      if (progress == null) return child;
+                                      return const Center(child: CircularProgressIndicator());
+                                    },
+                                  )
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(12),
@@ -363,13 +390,15 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
-                                        "Pad thai",
+                                      Expanded(child: 
+                                      Text(//Deleted const
+                                        foodList[index]['name'],
                                         style: TextStyle(
                                           fontFamily: 'Sora',
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                      ),
                                       ),
                                       GestureDetector(
                                         onTap: () {
