@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
 import 'package:foodsense_app/pages/home_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DatabasePage extends StatefulWidget {
   const DatabasePage({super.key});
@@ -10,15 +12,66 @@ class DatabasePage extends StatefulWidget {
 }
 
 class _DatabasePageState extends State<DatabasePage> {
-  
+  //Make a Controler
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  final TextEditingController _caloriesController = TextEditingController();
+  final TextEditingController _caloriesDescController = TextEditingController();
+
+
+  //Create function insertToCustomMenus to DB
+  Future<void> insertToCustomMenus() async {
+    final name = _nameController.text.trim();
+    final desc = _descController.text.trim();
+    //??
+    final cal = double.tryParse(_caloriesController.text.trim()) ?? -1;
+    final calDesc = _caloriesDescController.text.trim();
+
+    if (name.isEmpty || cal<0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill name and calories"))
+      );
+      return;
+    }
+
+    try {
+      await Supabase.instance.client
+            .from('custom_menus')
+            .insert({
+              'name': name,
+              'description': desc,
+              'calories': cal,
+              'calories_desc': calDesc,
+            });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Added to Database succesfully"))
+      );
+
+      _nameController.clear();
+      _descController.clear();
+      _caloriesController.clear();
+      _caloriesDescController.clear();
+
+    }
+    catch(error){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to insert: $error"))
+      );
+    }
+
+
+  }
   
   TextField buildRoundedTextField({
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
-    
+    //??
+    required TextEditingController controller,
 
   }) {
     return TextField(
+      controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
       decoration: InputDecoration(
@@ -128,7 +181,8 @@ class _DatabasePageState extends State<DatabasePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    buildRoundedTextField(),
+                    //Add controller
+                    buildRoundedTextField(controller: _nameController),
 
                     const SizedBox(height: 24),
                     const Text(
@@ -141,7 +195,8 @@ class _DatabasePageState extends State<DatabasePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    buildRoundedTextField(maxLines: 4),
+                    //Add controller
+                    buildRoundedTextField(maxLines: 4, controller: _descController),
 
                     const SizedBox(height: 24),
                     const Text(
@@ -154,7 +209,8 @@ class _DatabasePageState extends State<DatabasePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    buildRoundedTextField(keyboardType: TextInputType.number),
+                    //Add controller
+                    buildRoundedTextField(keyboardType: TextInputType.number, controller: _caloriesController),
 
                     const SizedBox(height: 24),
                     const Text(
@@ -167,15 +223,17 @@ class _DatabasePageState extends State<DatabasePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    buildRoundedTextField(maxLines: 4),
+                    //Add controller
+                    buildRoundedTextField(maxLines: 4, controller: _caloriesDescController),
 
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          //ไปไหนดีจ๊ะ เฟน
-                        },
+                        // onPressed: (insertToCustomMenus) {
+                        //   //ไปไหนดีจ๊ะ เฟน
+                        // },
+                        onPressed: insertToCustomMenus,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF9747FF),
                           shape: RoundedRectangleBorder(
