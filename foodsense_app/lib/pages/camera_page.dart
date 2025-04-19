@@ -32,7 +32,7 @@ class _CameraPageState extends State<CameraPage> {
   Future<String> predictFoodNameFromImage(File imageFile) async {
     //MOCK
     //Model
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
     return "Pad Thai";
   }
 
@@ -49,7 +49,7 @@ class _CameraPageState extends State<CameraPage> {
 
     if (predictedName == 'Unknown') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Food not Recognize")),
+        SnackBar(content: Text("Food not recognized")),
       );
       return;
     }
@@ -63,7 +63,7 @@ class _CameraPageState extends State<CameraPage> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => DetailPage(foodData: response)),
+        MaterialPageRoute(builder: (context) => DetailPage(foodData: response, fromCameraPage: true,)),
       );
     }
 
