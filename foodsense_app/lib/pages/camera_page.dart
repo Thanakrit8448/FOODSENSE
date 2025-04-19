@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
 import 'package:foodsense_app/pages/home_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:foodsense_app/pages/detail_page.dart';
 import 'dart:io';
 
 class CameraPage extends StatefulWidget {
@@ -12,6 +14,9 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
+
+  
+
   File? _selectedImage;
 
   Future<void> _pickImageFromGallery() async {
@@ -22,6 +27,54 @@ class _CameraPageState extends State<CameraPage> {
         _selectedImage = File(pickedFile.path);
       });
     }
+  }
+
+  Future<String> predictFoodNameFromImage(File imageFile) async {
+    //MOCK
+    //Model
+    await Future.delayed(Duration(seconds: 3));
+    return "Pad Thai";
+  }
+
+
+  Future<void> analyzeImage() async {
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select an image first')),
+      );
+      return;
+    }
+
+    final predictedName = await predictFoodNameFromImage(_selectedImage!);
+
+    if (predictedName == 'Unknown') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Food not Recognize")),
+      );
+      return;
+    }
+
+    try {
+      final response = await Supabase.instance.client
+            .from('food_items')
+            .select()
+            .eq('name', predictedName)
+            .single();
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => DetailPage(foodData: response)),
+      );
+    }
+
+    catch(error){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching food info: $error"))
+      );
+    }
+
+
+    
   }
 
   @override
@@ -134,9 +187,7 @@ class _CameraPageState extends State<CameraPage> {
             left: 20,
             right: 20,
             child: ElevatedButton(
-              onPressed: () {
-                // TODO: เรียก API วิเคราะห์อาหาร
-              },
+              onPressed: analyzeImage, // TODO: เรียก API วิเคราะห์อาหาร
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9747FF),
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
