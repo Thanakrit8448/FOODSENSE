@@ -150,15 +150,15 @@ class _HistoryPageState extends State<HistoryPage> {
                               return Padding(
                                 padding: const EdgeInsets.only(right: 16),
                                 child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => const DetailPage(),
-                                      ),
-                                    );
-                                  },
+                                  // onTap: () {
+                                  //   Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //       builder:
+                                  //           (context) => DetailPage(foodData: foodList[index]),
+                                  //     ),
+                                  //   );
+                                  // },
                                   child: Container(
                                     width: 180,
                                     decoration: BoxDecoration(

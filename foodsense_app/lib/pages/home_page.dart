@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentAdIndex = 0;
   Timer? _adTimer;
+  
 
   //Create List retrieve Food Data from supabase
   List<Map<String, dynamic>> foodList = [];
@@ -359,7 +360,7 @@ class _HomePageState extends State<HomePage> {
                           child: GestureDetector(
                             onTap: () {
                               Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => const DetailPage()),
+                              MaterialPageRoute(builder: (context) => DetailPage(foodData: foodList[index])),
                               );
                             },
                           
