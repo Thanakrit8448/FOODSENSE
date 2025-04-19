@@ -5,6 +5,7 @@ import 'package:foodsense_app/pages/home_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:foodsense_app/pages/detail_page.dart';
 import 'dart:io';
+import 'dart:math';
 
 class CameraPage extends StatefulWidget {
   const CameraPage({Key? key}) : super(key: key);
@@ -30,10 +31,34 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future<String> predictFoodNameFromImage(File imageFile) async {
-    //MOCK
-    //Model
+    const foodNames = [
+      'Khao Man Gai',
+      'Pad Thai',
+      'Tom Yum Goong',
+      'Japanese Curry with Rice',
+      'Katsudon',
+      'Mango Sticky Rice',
+      'Omelette',
+      'Stir-fried Basil Pork with Rice',
+      'Pad See Ew',
+      'Thai Gravy Noodles',
+      'Ramen',
+      'Fried Chicken',
+      'Fried Rice',
+      'Boiled Rice',
+      'Green Curry with Chicken',
+      'Hamburger',
+      'Tuna Sandwich',
+      'Spaghetti Carbonara',
+      'Salmon Sushi',
+      'Pork Chop Steak',
+    ];
+
     await Future.delayed(Duration(seconds: 1));
-    return "Pad Thai";
+
+    final random = Random();
+    
+    return foodNames[random.nextInt(foodNames.length)];
   }
 
 
