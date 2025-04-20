@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:foodsense_app/pages/home_page.dart';
 import 'package:foodsense_app/pages/map_page.dart';
+import 'package:foodsense_app/pages/database_page.dart';
+import 'package:foodsense_app/pages/history_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DetailPage extends StatefulWidget {
-  const DetailPage({super.key});
+  final Map<String, dynamic> foodData;
+  final bool fromCameraPage;
+
+  const DetailPage({super.key, required this.foodData, this.fromCameraPage = false});
 
   @override
   State<DetailPage> createState() => _DetailPageState();
@@ -10,6 +17,53 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
   bool isFavorite = false;
+
+  Future<void> addToHistory() async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+  final foodId = widget.foodData['id'];
+
+  if (userId == null || foodId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Missing user or food ID")),
+    );
+    return;
+  }
+
+  try {
+    await Supabase.instance.client
+        .from('user_food_logs')
+        .insert({
+          'user_id': userId,
+          'food_id': foodId,
+          'date': DateTime.now().toIso8601String(),
+        });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Added to History!")),
+    );
+
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HistoryPage()),
+      (route) => false,
+    );
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Added to History!")),
+      );
+    });
+
+  } 
+
+  catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $error")),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,16 +124,17 @@ class _DetailPageState extends State<DetailPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Image.asset('assets/icons/Pad_Thai.jpg'),
+                        child: Image.network(widget.foodData['image_url']),
+                        //Image.asset('assets/icons/Pad_Thai.jpg'),
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     // Title
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Pad thai',
+                        widget.foodData['name'],
                         style: TextStyle(fontSize: 22, fontFamily: 'Sora'),
                       ),
                     ),
@@ -110,19 +165,19 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                       ),
                     ),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Text(
-                        'Pad thai is a stir-fried rice noodle dish commonly served as a street food in Thailand as part of the country\'s cuisine. Thailand\'s national dish, it is typically made with rice noodles, shrimp, peanuts, scrambled egg, sugar and bean sprouts. The ingredients are fried in a wok.',
+                        widget.foodData['description'],
                         style: TextStyle(color: Colors.grey, height: 1.5),
                       ),
                     ),
 
                     // Calories
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Calories',
+                        '${widget.foodData['calories']} kcal',
                         style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 16,
@@ -130,24 +185,58 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: Text(
-                        'พลังงานทั้งหมด 303 กิโลแคลอรี่',
-                        style: TextStyle(
-                          color: Color(0xFF9747FF),
-                          fontWeight: FontWeight.bold,
+                    
+                    const SizedBox(height: 20),
+                    if (widget.fromCameraPage)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: addToHistory,
+                            label: const Text("Add to History"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9747FF),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        '1 plate of Pad Thai has total calories 303 kilocalories, protein 11 g., carbohydrate 31 g. and Fat 15 g. vitamins and minerals please see more information on nutrition facts sheet below.',
-                        style: TextStyle(color: Colors.grey, height: 1.5),
-                      ),
-                    ),
 
+
+
+                    const SizedBox(height: 20),
+                    if (widget.fromCameraPage)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const DatabasePage()),
+                              );
+                            },
+                            label: const Text("Add Your Menu Into Our Database"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF9747FF),
+                              side: const BorderSide(color: Color(0xFF9747FF), width: 2),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 24),
                   ],
                 ),

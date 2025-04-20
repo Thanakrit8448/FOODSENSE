@@ -6,14 +6,14 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
-        android:label="foodsense_app"
+        android:label="FOODSENSE"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
         
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAu2g9J5anRHzxF6r2Szu0moQGtaP55C-M" />
+            android:value="" />  <!-- <- Add you own google maps android api key here -->
 
         <activity
             android:name=".MainActivity"

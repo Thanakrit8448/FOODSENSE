@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:foodsense_app/pages/bottom_nav.dart';
 import 'package:foodsense_app/pages/detail_page.dart';
 import 'package:foodsense_app/pages/home_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -11,33 +12,104 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  // ตัวอย่างข้อมูล
-  final List<String> sections = ['Today', 'Yesterday', '7 Days Before'];
-  final List<List<Map<String, dynamic>>> foodHistory = [
-    [
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-    ],
-    [
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-    ],
-    [
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-      {'name': 'Pad thai', 'image': 'assets/icons/Pad_Thai.jpg'},
-    ],
-  ];
+  List<Map<String, dynamic>> userHistory = [];
 
-  List<List<bool>> isFavoriteList = [];
+  Future<void> fetchUserHistory() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final response = await Supabase.instance.client
+          .from('user_food_logs')
+          .select('date, food_items(name, image_url, calories)')
+          .eq('user_id', userId)
+          .order('date', ascending: false);
+
+      setState(() {
+        userHistory = List<Map<String, dynamic>>.from(response);
+
+        groupedHistory['Today'] = [];
+        groupedHistory['Yesterday'] = [];
+        groupedHistory['Earlier'] = [];
+
+        for (var item in userHistory) {
+        final date = DateTime.parse(item['date']);
+        final now = DateTime.now();
+
+        final isToday = date.year == now.year &&
+            date.month == now.month &&
+            date.day == now.day;
+
+        final isYesterday = date.year == now.year &&
+            date.month == now.month &&
+            date.day == now.day - 1;
+
+        if (isToday) {
+          groupedHistory['Today']!.add(item);
+        } else if (isYesterday) {
+          groupedHistory['Yesterday']!.add(item);
+        } else {
+          groupedHistory['Earlier']!.add(item);
+        }
+      }
+      });
+    } 
+    
+    
+    catch (e) {
+      debugPrint('Error fetching user history: $e');
+    }
+  }
+
+  // ตัวอย่างข้อมูล
+  final List<String> sections = ['Today', 'Yesterday', 'Earlier'];
+  final Map<String, List<Map<String, dynamic>>> groupedHistory = {
+    'Today': [],
+    'Yesterday': [],
+    'Earlier': [],
+  };
+
+  //List<List<bool>> isFavoriteList = [];
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   isFavoriteList =
+  //       foodHistory
+  //           .map((section) => List.filled(section.length, false))
+  //           .toList();
+  // }
+
+  String? username;
+
+  Future<void> fetchProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final data = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+
+      setState(() {
+        username = data['username'] ?? 'User';
+      });
+    } 
+    
+    
+    catch (error) {
+      debugPrint('Error fetching profile: $error');
+    }
+  }
+
 
   @override
   void initState() {
     super.initState();
-    isFavoriteList =
-        foodHistory
-            .map((section) => List.filled(section.length, false))
-            .toList();
+    fetchUserHistory();
+    fetchProfile();
   }
 
   @override
@@ -68,9 +140,9 @@ class _HistoryPageState extends State<HistoryPage> {
                   const Spacer(), // ดันทุกอย่างไปชิดขวา
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
+                    children: [
                       Text(
-                        'Thanakrit',
+                        username ?? 'Loading...',
                         style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 16,
@@ -87,7 +159,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   const CircleAvatar(
                     radius: 30,
                     backgroundImage: AssetImage(
-                      'assets/icons/profile_pic.jpg',
+                      'assets/icons/profile_pic2.jpg',
                     ), 
                   ),
                 ],
@@ -144,9 +216,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           height: 180,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: foodHistory[sectionIndex].length,
+                            itemCount: groupedHistory[sections[sectionIndex]]!.length,
                             itemBuilder: (context, index) {
-                              final food = foodHistory[sectionIndex][index];
+                              final food = groupedHistory[sections[sectionIndex]]![index];
                               return Padding(
                                 padding: const EdgeInsets.only(right: 16),
                                 child: GestureDetector(
@@ -155,7 +227,13 @@ class _HistoryPageState extends State<HistoryPage> {
                                       context,
                                       MaterialPageRoute(
                                         builder:
-                                            (context) => const DetailPage(),
+                                            (context) => DetailPage(foodData: {
+                                                  'name': food['food_items']['name'],
+                                                  'image_url': food['food_items']['image_url'],
+                                                  'calories': food['food_items']['calories'],
+                                                  'description': '-', 
+                                              }
+                                            ),
                                       ),
                                     );
                                   },
@@ -180,8 +258,8 @@ class _HistoryPageState extends State<HistoryPage> {
                                               const BorderRadius.vertical(
                                                 top: Radius.circular(16),
                                               ),
-                                          child: Image.asset(
-                                            food['image'],
+                                          child: Image.network(
+                                            food['food_items']['image_url'],
                                             height: 130,
                                             width: double.infinity,
                                             fit: BoxFit.cover,
@@ -198,7 +276,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  food['name'],
+                                                  food['food_items']['name'],
                                                   style: const TextStyle(
                                                     fontFamily: 'Sora',
                                                     fontSize: 14,
@@ -208,21 +286,21 @@ class _HistoryPageState extends State<HistoryPage> {
                                                       TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    isFavoriteList[sectionIndex][index] =
-                                                        !isFavoriteList[sectionIndex][index];
-                                                  });
-                                                },
-                                                child: Image.asset(
-                                                  isFavoriteList[sectionIndex][index]
-                                                      ? 'assets/icons/heart_red.png'
-                                                      : 'assets/icons/heart_black.png',
-                                                  width: 22,
-                                                  height: 22,
-                                                ),
-                                              ),
+                                              // GestureDetector(
+                                              //   onTap: () {
+                                              //     setState(() {
+                                              //       isFavoriteList[sectionIndex][index] =
+                                              //           !isFavoriteList[sectionIndex][index];
+                                              //     });
+                                              //   },
+                                              //   child: Image.asset(
+                                              //     isFavoriteList[sectionIndex][index]
+                                              //         ? 'assets/icons/heart_red.png'
+                                              //         : 'assets/icons/heart_black.png',
+                                              //     width: 22,
+                                              //     height: 22,
+                                              //   ),
+                                              // ),
                                             ],
                                           ),
                                         ),
