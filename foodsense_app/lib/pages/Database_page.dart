@@ -54,6 +54,7 @@ class _DatabasePageState extends State<DatabasePage> {
       _caloriesDescController.clear();
 
     }
+    
     catch(error){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to insert: $error"))
