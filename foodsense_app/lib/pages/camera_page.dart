@@ -62,7 +62,10 @@ Future<void> analyzeImage() async {
         builder: (context) => DetailPage(foodData: response, fromCameraPage: true),
       ),
     );
-  } catch (e) {
+  } 
+  
+  
+  catch (error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Not found in database: $predictedName")),
     );
@@ -114,7 +117,7 @@ Future<String?> predictFoodNameFromImage(File imageFile) async {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       final message = json['choices'][0]['message']['content'];
-      print("GPT raw reply: $message");
+      print("➤ GPT raw reply: $message");
 
       final match = RegExp(r'{.*}').firstMatch(message);
       if (match == null) return null;
@@ -122,7 +125,10 @@ Future<String?> predictFoodNameFromImage(File imageFile) async {
       final extracted = match.group(0)!;
       final parsed = jsonDecode(extracted);
       return parsed['label'];
-    } else {
+    } 
+    
+    
+    else {
       print("GPT error: ${response.body}");
       return null;
     }

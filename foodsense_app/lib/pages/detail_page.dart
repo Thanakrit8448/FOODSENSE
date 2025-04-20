@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:foodsense_app/pages/home_page.dart';
 import 'package:foodsense_app/pages/map_page.dart';
 import 'package:foodsense_app/pages/database_page.dart';
+import 'package:foodsense_app/pages/history_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DetailPage extends StatefulWidget {
@@ -44,7 +45,7 @@ class _DetailPageState extends State<DetailPage> {
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+      MaterialPageRoute(builder: (context) => const HistoryPage()),
       (route) => false,
     );
 
