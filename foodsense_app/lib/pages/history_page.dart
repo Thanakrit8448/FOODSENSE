@@ -60,7 +60,7 @@ class _HistoryPageState extends State<HistoryPage> {
       debugPrint('Error fetching user history: $e');
     }
   }
-  
+
   // ตัวอย่างข้อมูล
   final List<String> sections = ['Today', 'Yesterday', 'Earlier'];
   final Map<String, List<Map<String, dynamic>>> groupedHistory = {
@@ -80,10 +80,36 @@ class _HistoryPageState extends State<HistoryPage> {
   //           .toList();
   // }
 
+  String? username;
+
+  Future<void> fetchProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final data = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+
+      setState(() {
+        username = data['username'] ?? 'User';
+      });
+    } 
+    
+    
+    catch (error) {
+      debugPrint('Error fetching profile: $error');
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
     fetchUserHistory();
+    fetchProfile();
   }
 
   @override
@@ -114,9 +140,9 @@ class _HistoryPageState extends State<HistoryPage> {
                   const Spacer(), // ดันทุกอย่างไปชิดขวา
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
+                    children: [
                       Text(
-                        'Thanakrit',
+                        username ?? 'Loading...',
                         style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 16,
@@ -133,7 +159,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   const CircleAvatar(
                     radius: 30,
                     backgroundImage: AssetImage(
-                      'assets/icons/profile_pic.jpg',
+                      'assets/icons/profile_pic2.jpg',
                     ), 
                   ),
                 ],

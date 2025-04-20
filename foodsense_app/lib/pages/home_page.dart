@@ -17,7 +17,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentAdIndex = 0;
   Timer? _adTimer;
-  
 
   //Create List retrieve Food Data from supabase
   List<Map<String, dynamic>> foodList = [];
@@ -35,11 +34,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+
+  Future<void> fetchProfileData() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    final data = await Supabase.instance.client
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .single();
+
+    setState(() {
+      _nameController.text = data['username'] ?? "No name";
+      _emailController.text = data['email'] ?? "No email";
+    });
+
+  }
+
   @override
   void initState() {
     super.initState();
     _startAdRotation();
     fetchFoodItem();
+    fetchProfileData();
   }
 
 
@@ -54,12 +72,8 @@ class _HomePageState extends State<HomePage> {
   final ImagePicker _picker = ImagePicker();
 
   File? _profileImage;
-  final TextEditingController _nameController = TextEditingController(
-    text: "Thanakrit",
-  );
-  final TextEditingController _emailController = TextEditingController(
-    text: "thanakrit.oue@student.mahidol.edu",
-  );
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   void _startAdRotation() {
     _adTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -146,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Username",
                           style: TextStyle(
                             fontSize: 18,
@@ -174,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Email",
                           style: TextStyle(
                             fontSize: 18,
