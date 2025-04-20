@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:foodsense_app/pages/detail_page.dart';
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CameraPage extends StatefulWidget {
   const CameraPage({Key? key}) : super(key: key);
@@ -15,7 +17,6 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
-
   
 
   File? _selectedImage;
@@ -30,77 +31,112 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-  Future<String> predictFoodNameFromImage(File imageFile) async {
-    const foodNames = [
-      'Khao Man Gai',
-      'Pad Thai',
-      'Tom Yum Goong',
-      'Japanese Curry with Rice',
-      'Katsudon',
-      'Mango Sticky Rice',
-      'Omelette',
-      'Stir-fried Basil Pork with Rice',
-      'Pad See Ew',
-      'Thai Gravy Noodles',
-      'Ramen',
-      'Fried Chicken',
-      'Fried Rice',
-      'Boiled Rice',
-      'Green Curry with Chicken',
-      'Hamburger',
-      'Tuna Sandwich',
-      'Spaghetti Carbonara',
-      'Salmon Sushi',
-      'Pork Chop Steak',
-    ];
 
-    await Future.delayed(Duration(seconds: 1));
-
-    final random = Random();
-    
-    return foodNames[random.nextInt(foodNames.length)];
+Future<void> analyzeImage() async {
+  if (_selectedImage == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Please select an image first')),
+    );
+    return;
   }
 
+  final predictedName = await predictFoodNameFromImage(_selectedImage!);
 
-  Future<void> analyzeImage() async {
-    if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select an image first')),
-      );
-      return;
-    }
-
-    final predictedName = await predictFoodNameFromImage(_selectedImage!);
-
-    if (predictedName == 'Unknown') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Food not recognized")),
-      );
-      return;
-    }
-
-    try {
-      final response = await Supabase.instance.client
-            .from('food_items')
-            .select()
-            .eq('name', predictedName)
-            .single();
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DetailPage(foodData: response, fromCameraPage: true,)),
-      );
-    }
-
-    catch(error){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching food info: $error"))
-      );
-    }
-
-
-    
+  if (predictedName == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Failed to predict food name")),
+    );
+    return;
   }
+
+  try {
+    final response = await Supabase.instance.client
+        .from('food_items')
+        .select()
+        .eq('name', predictedName)
+        .single();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPage(foodData: response, fromCameraPage: true),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Not found in database: $predictedName")),
+    );
+  }
+}
+
+
+Future<String?> predictFoodNameFromImage(File imageFile) async {
+  final bytes = await imageFile.readAsBytes();
+  final base64Image = base64Encode(bytes);
+
+  final url = Uri.parse("https://api.openai.com/v1/chat/completions");
+  final apiKey = "" ; // <- Add you own openai api key
+
+  final headers = {
+    "Authorization": "Bearer $apiKey",
+    "Content-Type": "application/json",
+  };
+
+  const foodNames = [
+    "Khao Man Gai", "Pad Thai", "Tom Yum Goong", "Japanese Curry with Rice", "Katsudon",
+    "Mango Sticky Rice", "Omelette", "Stir-fried Basil Pork with Rice", "Pad See Ew",
+    "Thai Gravy Noodles", "Ramen", "Fried Chicken", "Fried Rice", "Boiled Rice",
+    "Green Curry with Chicken", "Hamburger", "Tuna Sandwich", "Spaghetti Carbonara",
+    "Salmon Sushi", "Pork Chop Steak"
+  ];
+
+  final prompt =
+      "This is an image of food. From the 20 following menu items only, which dish is most likely shown in the image? Respond only in JSON like this: {\"label\": \"...\", \"confidence\": 0.xx }.\n\nChoices: ${foodNames.join(', ')}";
+
+  final body = jsonEncode({
+    "model": "gpt-4o",
+    "messages": [
+      {"role": "system", "content": "You are a food image classifier."},
+      {
+        "role": "user",
+        "content": [
+          {"type": "text", "text": prompt},
+          {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,$base64Image"}}
+        ]
+      }
+    ],
+    "max_tokens": 100
+  });
+
+  try {
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final message = json['choices'][0]['message']['content'];
+      print("GPT raw reply: $message");
+
+      final match = RegExp(r'{.*}').firstMatch(message);
+      if (match == null) return null;
+
+      final extracted = match.group(0)!;
+      final parsed = jsonDecode(extracted);
+      return parsed['label'];
+    } else {
+      print("GPT error: ${response.body}");
+      return null;
+    }
+  } 
+  
+  
+  catch (error) {
+    print("Error: $error");
+    return null;
+  }
+}
+
+
+ 
 
   @override
   Widget build(BuildContext context) {
