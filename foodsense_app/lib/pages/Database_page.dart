@@ -163,6 +163,19 @@ class _DatabasePageState extends State<DatabasePage> {
               child: Divider(),
             ),
 
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Text(
+                'Note: This page is not for adding food to your history.\nIt is for adding new menu items to the database,\nwhich will be used in future updates.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.redAccent,
+                  fontFamily: 'Sora',
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
