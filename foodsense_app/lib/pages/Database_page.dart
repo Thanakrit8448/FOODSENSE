@@ -64,6 +64,37 @@ class _DatabasePageState extends State<DatabasePage> {
 
   }
   
+  String? username;
+
+  Future<void> fetchProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final data = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+
+      setState(() {
+        username = data['username'] ?? 'User';
+      });
+    } 
+    
+    
+    catch (error) {
+      debugPrint('Error fetching profile: $error');
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfile();
+  }
+
   TextField buildRoundedTextField({
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
@@ -121,9 +152,9 @@ class _DatabasePageState extends State<DatabasePage> {
                   const Spacer(),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
+                    children: [
                       Text(
-                        'Thanakrit',
+                        username ?? 'Loading...',
                         style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 16,
@@ -139,7 +170,7 @@ class _DatabasePageState extends State<DatabasePage> {
                   const SizedBox(width: 10),
                   const CircleAvatar(
                     radius: 30,
-                    backgroundImage: AssetImage('assets/icons/profile_pic.jpg'),
+                    backgroundImage: AssetImage('assets/icons/profile_pic2.jpg'),
                   ),
                 ],
               ),
