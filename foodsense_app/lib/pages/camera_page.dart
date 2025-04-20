@@ -78,7 +78,7 @@ Future<String?> predictFoodNameFromImage(File imageFile) async {
   final base64Image = base64Encode(bytes);
 
   final url = Uri.parse("https://api.openai.com/v1/chat/completions");
-  final apiKey = "" ; // <- Add you own openai api key
+  final apiKey = "" ; // <- Add you own openai api key here
 
   final headers = {
     "Authorization": "Bearer $apiKey",
